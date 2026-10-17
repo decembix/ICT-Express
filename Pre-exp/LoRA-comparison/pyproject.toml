@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "spread-lora-comparison"
+version = "0.1.0"
+description = "Teacher-free LoRA/router study on SPREAD-compressed OLMoE"
+requires-python = ">=3.10"
+dependencies = [
+  "torch>=2.4",
+  "transformers>=4.51,<5",
+  "datasets>=3.5",
+  "safetensors>=0.5",
+  "tqdm>=4.66",
+  "numpy>=1.26",
+]
+
+[tool.setuptools]
+packages = ["lora_comparison"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

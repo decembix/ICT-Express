@@ -1,0 +1,29 @@
+{
+  "teacher": "allenai/OLMoE-1B-7B-0924",
+  "teacher_revision": "6d84c48581ece794365f2b8e9cfb043c68ade9c5",
+  "compression": {
+    "calibration": "SPREAD committed WikiText-103 first-128 sufficient statistics",
+    "sizes": {
+      "1b": {"selected_experts": 10, "num_groups": 8},
+      "3b": {"selected_experts": 32, "num_groups": 25},
+      "5b": {"selected_experts": 57, "num_groups": 45}
+    },
+    "similarity_threshold": 0.95,
+    "svd_rank": 4,
+    "merge_method": "M-REAP-WeightAvg-Uniform"
+  },
+  "adaptation": {
+    "knowledge_distillation": false,
+    "teacher_free": true,
+    "datasets": ["wikitext", "piqa"],
+    "steps": 100,
+    "peak_learning_rate": 5e-5,
+    "warmup_steps": 10,
+    "lora_rank": 8,
+    "lora_alpha": 8
+  },
+  "evaluation": {
+    "wikitext": "perplexity",
+    "piqa": "acc_norm"
+  }
+}
