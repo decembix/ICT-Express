@@ -24,6 +24,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--phase", choices=("build", "train", "evaluate", "all", "report"), default="all")
     parser.add_argument("--output-root", default=str(PROJECT_ROOT / "outputs"))
+    parser.add_argument(
+        "--split-output-by-size",
+        action="store_true",
+        help="run each requested size under <output-root>_<size>",
+    )
     parser.add_argument("--spread-root", default="/home/xyzysh/work/SPREAD")
     parser.add_argument("--teacher", default="allenai/OLMoE-1B-7B-0924")
     parser.add_argument("--teacher-revision", default="6d84c48581ece794365f2b8e9cfb043c68ade9c5")
@@ -59,6 +64,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--continue-on-error", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
+
+
+def size_output_root(output_root: str | Path, size: str) -> str:
+    """Return a sibling output directory with an explicit model-size suffix."""
+    root = Path(output_root).expanduser()
+    return str(root.with_name(f"{root.name}_{size}"))
 
 
 def _config(args: argparse.Namespace) -> RunConfig:
@@ -117,8 +128,7 @@ def _run_worker(command: list[str], log_path: Path, env: dict[str, str], dry_run
         raise subprocess.CalledProcessError(return_code, command)
 
 
-def main() -> None:
-    args = parse_args()
+def _run(args: argparse.Namespace) -> None:
     config = _config(args)
     if config.local_files_only:
         os.environ.setdefault("HF_HUB_OFFLINE", "1")
@@ -210,6 +220,25 @@ def main() -> None:
     if failures:
         save_json(config.root / "failed_runs.json", failures)
         raise SystemExit(f"{len(failures)} condition(s) failed; see failed_runs.json")
+
+
+def main() -> None:
+    args = parse_args()
+    if not args.split_output_by_size:
+        _run(args)
+        return
+
+    base_output_root = args.output_root
+    for size in args.sizes:
+        size_args = argparse.Namespace(**vars(args))
+        size_args.output_root = size_output_root(base_output_root, size)
+        size_args.sizes = [size]
+        size_args.split_output_by_size = False
+        print(
+            f"\n===== size={size} output={size_args.output_root} =====",
+            flush=True,
+        )
+        _run(size_args)
 
 
 if __name__ == "__main__":

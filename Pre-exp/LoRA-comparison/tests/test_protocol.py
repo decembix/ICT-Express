@@ -1,6 +1,7 @@
 import unittest
 
 from lora_comparison.protocol import SIZE_SPECS, VARIANTS
+from lora_comparison.run import size_output_root
 
 
 class ProtocolTest(unittest.TestCase):
@@ -23,3 +24,9 @@ class ProtocolTest(unittest.TestCase):
     def test_size_validation_rejects_wrong_teacher_geometry(self):
         with self.assertRaises(ValueError):
             SIZE_SPECS["5b"].selection_percent(32)
+
+    def test_size_output_root_appends_size_to_directory_name(self):
+        self.assertEqual(
+            size_output_root("/tmp/olmoe_spread_lora_100step", "3b"),
+            "/tmp/olmoe_spread_lora_100step_3b",
+        )

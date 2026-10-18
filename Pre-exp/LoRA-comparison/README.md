@@ -79,7 +79,7 @@ workspace/
 ## 설치
 
 ```bash
-cd /home/xyzysh/ICT-Express/Pre-exp/LoRA-comparison
+cd /home/xyzysh/work/ICT-Express/Pre-exp/LoRA-comparison
 PY=/home/xyzysh/miniconda3/envs/spread-table1/bin/python
 
 "$PY" -m pip install -e .
@@ -127,7 +127,8 @@ datasets)입니다. 5B 조건까지 포함하므로 smoke 결과와 VRAM을 확�
 "$PY" -u run_experiment.py \
   --phase all \
   --spread-root /home/xyzysh/work/SPREAD \
-  --output-root "$PWD/outputs/olmoe_spread_lora" \
+  --output-root "$PWD/outputs/olmoe_spread_lora_100step" \
+  --split-output-by-size \
   --device cuda:0 \
   --sizes 1b 3b 5b \
   --train-datasets wikitext piqa \
@@ -136,15 +137,22 @@ datasets)입니다. 5B 조건까지 포함하므로 smoke 결과와 VRAM을 확�
   --rank 8 --alpha 8 \
   --batch-size 4 --micro-batch-size 1 --max-length 512 \
   --eval-tasks wikitext piqa \
-  2>&1 | tee outputs/olmoe_spread_lora.log
+  2>&1 | tee outputs/olmoe_spread_lora_100step_size_sweep.log
 ```
 
 중단 후 같은 명령을 다시 실행하면 완료된 `result.json`은 건너뛰고, 미완료
 학습은 가장 최근 `checkpoints/step_*`에서 resume합니다. 결과는 다음에 생성됩니다.
 
 ```text
-outputs/olmoe_spread_lora/
-├── backbones/{1b,3b,5b}/
+outputs/
+├── olmoe_spread_lora_100step_1b/
+├── olmoe_spread_lora_100step_3b/
+└── olmoe_spread_lora_100step_5b/
+
+각 크기 폴더는 독립적으로 다음 구조를 갖습니다.
+
+<size-root>/
+├── backbones/<size>/
 ├── runs/<size>/<variant>/<train_dataset>/
 │   ├── training.jsonl
 │   ├── final/adapter.safetensors
@@ -158,7 +166,9 @@ outputs/olmoe_spread_lora/
 "$PY" -u run_experiment.py \
   --phase evaluate \
   --spread-root /home/xyzysh/work/SPREAD \
-  --output-root "$PWD/outputs/olmoe_spread_lora" \
+  --output-root "$PWD/outputs/olmoe_spread_lora_100step" \
+  --split-output-by-size \
+  --sizes 1b 3b 5b \
   --device cuda:0
 ```
 
